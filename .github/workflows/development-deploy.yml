@@ -50,7 +50,7 @@ jobs:
         id: trigger-codebuild
         run: |
           buildId=$(aws codebuild start-build \
-          --project-name YourCodeBuildProjectName \
+          --project-name manito42_development_codebuild \
           --output text \
           --source-version ${{ github.sha }})
             echo "buildId=$buildId" >> $GITHUB_OUTPUT
@@ -70,7 +70,9 @@ jobs:
           --deployment-config-name CodeDeployDefault.OneAtATime \
           --output text --deployment-group-name 42manito-development-deployment-group \
           --file-exists-behavior OVERWRITE \
-          --s3-location bucket=manito42-code-deploy-bucket-test,bundleType=zip,key=server.zip)
+          --s3-location bucket=manito42-code-deploy-bucket-test/build_artifact_codebuild/ \
+          ,bundleType=zip, \
+          key=artifact.zip)
           echo "deploymentId=$id" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment to finish
