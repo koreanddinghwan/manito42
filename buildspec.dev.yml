@@ -1,20 +1,37 @@
 version: 0.2
 
 phases:
+  install:
+    run-as: root
+    on-failure: ABORT
+    commands:
+      - echo "Installing dependencies"
+      - npm install
+
   pre_build:
+    run-as: root
+    on-failure: ABORT
     commands:
       - echo "Pre-build phase"
-  build:
-    commands:
       - echo "Generating Prisma client"
       - npx prisma generate
       - echo "Deploying Prisma migrations"
       - npx prisma migrate deploy
+
+  build:
+    run-as: root
+    on-failure: ABORT
+    commands:
       - echo "Building server"
       - npm run build
-  post_build:
-    commands:
-      - echo "Post-build phase"
 
 artifacts:
-  files: '**/*'
+  files:
+    - 'node_modules/**/*' # node_modules
+    - 'dist/**/*' # 빌드된 파일
+    - 'package.json' # start script를 위해 필요
+    - 'package-lock.json' # start script를 위해 필요
+    - 'prisma/**/*' # prisma 파일
+    - '.github/**/*' # github actions 파일(start server script)
+    - '.env' # 환경변수
+
