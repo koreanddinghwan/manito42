@@ -1,7 +1,7 @@
 name: AWS S3 Upload and CodeBuild
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
 
