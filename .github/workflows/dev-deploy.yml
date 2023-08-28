@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: 18
       - run: node -v
+      - run: cat /etc/os-release
       - run: npm install
       - run: npx prisma generate
       - run: npm run build
