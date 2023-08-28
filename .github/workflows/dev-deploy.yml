@@ -3,7 +3,7 @@
 name: Dev Deploy to AWS
 
 on:
-  pull_request:
+  push:
     branches:
       - develop
 
