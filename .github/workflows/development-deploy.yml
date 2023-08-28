@@ -51,8 +51,7 @@ jobs:
         run: |
           buildId=$(aws codebuild start-build \
           --project-name manito42_development_codebuild \
-          --output text \
-          --source-version ${{ github.sha }})
+          --output text)
             echo "buildId=$buildId" >> $GITHUB_OUTPUT
 
       # CodeBuild가 빌드를 완료할 때까지 기다립니다.
