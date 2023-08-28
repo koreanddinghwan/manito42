@@ -52,7 +52,7 @@ jobs:
           buildId=$(aws codebuild start-build \
           --project-name manito42_development_codebuild \
           --output text)
-            echo "buildId=$buildId" >> $GITHUB_OUTPUT
+          echo "buildId=$buildId" >> $GITHUB_OUTPUT
 
       # CodeBuild가 빌드를 완료할 때까지 기다립니다.
       - name: Wait for CodeBuild completion
@@ -67,7 +67,8 @@ jobs:
           id=$(aws deploy create-deployment \
           --application-name 42manito-development-cd \
           --deployment-config-name CodeDeployDefault.OneAtATime \
-          --output text --deployment-group-name 42manito-development-deployment-group \
+          --output text \
+          --deployment-group-name 42manito-development-deployment-group \
           --file-exists-behavior OVERWRITE \
           --s3-location bucket=manito42-code-deploy-bucket-test/build_artifact_codebuild/ \
           ,bundleType=zip, \
