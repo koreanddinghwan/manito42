@@ -11,6 +11,28 @@ env:
   AWS_REGION: ap-northeast-2
 
 jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Secret
+        env:
+          # github repository 안의 ENV_PROD 환경변수 사용
+          ENV_DEV: ${{ secrets.ENV_DEV }}
+        run: |
+          echo "$ENV_DEV"  >> .env
+
+      - name: Install dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.16.1
+
+      - run: npm install
+      - run: npm run build
+
   deploy:
     permissions:
       id-token: write
@@ -27,24 +49,6 @@ jobs:
       # 레포지토리로 이동합니다.
       - name: Checkout
         uses: actions/checkout@v3
-
-        # 환경변수를 설치합니다.
-      - name: Install Secret
-        env:
-          # github repository 안의 ENV_PROD 환경변수 사용
-          ENV_DEV: ${{ secrets.ENV_DEV }}
-        run: |
-          echo "$ENV_DEV"  >> .env
-
-      - name: Install dependencies
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.16.1
-        run: |
-          npm install
-          npm run build
-
-      #sonarQube관련 처리 여기서 해야할수도.
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
