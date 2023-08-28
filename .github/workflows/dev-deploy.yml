@@ -37,6 +37,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+      - run: node -v
       - run: npm install
       - run: npx prisma generate
       - run: npm run build
