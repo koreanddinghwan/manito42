@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies and build
         uses: actions/setup-node@v3
         with:
-          node-version: 18.16.1
+          node-version: 18
       - run: npm install
       - run: npx prisma generate
       - run: npm run build
