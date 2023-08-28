@@ -13,7 +13,9 @@ jobs:
 
     name: Development Deploy Application
     runs-on: ubuntu-latest
+    # 사용될 환경변수 정의
     outputs:
+      buildId: ${{ steps.trigger-codebuild.outputs.buildId }}
       deploymentId: ${{ steps.create-deployment.outputs.deploymendId }}
     environment: development
 
@@ -41,7 +43,7 @@ jobs:
       # S3 버킷에 소스코드를 업로드합니다.
       - name: Upload source code to S3
         run: |
-          aws s3 cp . s3://manito42-code-deploy-bucket-test/server --recursive --exclude ".git/*" 
+          aws s3 cp . s3://manito42-code-deploy-bucket-test/raw_source_from_github --recursive --exclude ".git/*" 
 
       # CodeBuild를 사용해 S3 버킷에 업로드된 소스코드를 빌드합니다.(CodeBuild는 buildspec.yml을 참고합니다.)
       - name: Trigger CodeBuild
