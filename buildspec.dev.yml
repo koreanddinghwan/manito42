@@ -25,13 +25,13 @@ phases:
       - echo "Building server"
       - npm run build
 
+  post_build:
+   run-as: root
+   on-failure: ABORT
+   commands:
+      - echo "zip build artifact"
+      - zip -r artifact.zip . -x "src/*"
+
 artifacts:
   files:
-    - 'node_modules/**/*' # node_modules
-    - 'dist/**/*' # 빌드된 파일
-    - 'package.json' # start script를 위해 필요
-    - 'package-lock.json' # start script를 위해 필요
-    - 'prisma/**/*' # prisma 파일
-    - '.github/**/*' # github actions 파일(start server script)
-    - '.env' # 환경변수
-
+    - artifact.zip
