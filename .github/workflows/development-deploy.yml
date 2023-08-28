@@ -32,6 +32,11 @@ jobs:
         run: |
           echo "$ENV_DEV"  >> .env
 
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run build
+
       # AWS CLI를 사용하기 위해 AWS CLI를 설치합니다.
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -40,27 +45,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # S3 버킷에 소스코드를 업로드합니다.
-      - name: Upload source code to S3
+      #Code Deploy를 사용해 S3 bucket에 소스코드 업로드
+      - name: S3 업로드
         run: |
-          aws s3 cp . s3://manito42-code-deploy-bucket-test/raw_source_from_github --recursive --exclude ".git/*" 
+          aws deploy push --application-name 42manito-development-cd \
+          --description "upload test server file in s3" \
+          --s3-location s3://manito42-code-deploy-bucket-test/server.zip \
+          --source .
 
-      # CodeBuild를 사용해 S3 버킷에 업로드된 소스코드를 빌드합니다.(CodeBuild는 buildspec.yml을 참고합니다.)
-      - name: Trigger CodeBuild
-        id: trigger-codebuild
-        run: |
-          buildId=$(aws codebuild start-build \
-          --project-name manito42_development_codebuild \
-          --output text \
-          --query 'build.id')
-          echo "buildId=$buildId" >> $GITHUB_OUTPUT
-
-      # CodeBuild가 빌드를 완료할 때까지 기다립니다.
-      - name: Wait for CodeBuild completion
-        run: |
-          echo ${{ steps.trigger-codebuild.outputs.buildId }}
-          aws codebuild wait build-complete \
-          --build-id ${{ steps.trigger-codebuild.outputs.buildId }}
 
       - name: Create CodeDeploy Deployment
         id: create-deployment
@@ -71,9 +63,9 @@ jobs:
           --output text \
           --deployment-group-name 42manito-development-deployment-group \
           --file-exists-behavior OVERWRITE \
-          --s3-location bucket=manito42-code-deploy-bucket-test/build_artifact_codebuild/ \
+          --s3-location bucket=manito42-code-deploy-bucket-test/ \
           ,bundleType=zip, \
-          key=artifact.zip)
+          key=server.zip)
           echo "deploymentId=$id" >> $GITHUB_OUTPUT
 
       - name: Wait for deployment to finish
