@@ -5,9 +5,6 @@ cd /home/ubuntu
 
 ls -al
 
-# install Dependency
-npm i
-
 # generate prisma client
 npx prisma generate
 

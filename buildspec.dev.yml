@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Pre-build phase"
+  build:
+    commands:
+      - echo "Generating Prisma client"
+      - npx prisma generate
+      - echo "Deploying Prisma migrations"
+      - npx prisma migrate deploy
+      - echo "Building server"
+      - npm run build
+  post_build:
+    commands:
+      - echo "Post-build phase"
+
+artifacts:
+  files: '**/*'

@@ -1,0 +1,78 @@
+name: AWS S3 Upload and CodeBuild
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    permissions:
+      id-token: write
+      contents: write
+
+    name: Development Deploy Application
+    runs-on: ubuntu-latest
+    outputs:
+      deploymentId: ${{ steps.create-deployment.outputs.deploymendId }}
+    environment: development
+
+    steps:
+      # 레포지토리로 이동합니다.
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 환경변수를 설치합니다.
+      - name: Install Secret
+        env:
+          # github repository 안의 ENV_PROD 환경변수 사용
+          ENV_DEV: ${{ secrets.ENV_DEV }}
+        run: |
+          echo "$ENV_DEV"  >> .env
+
+      # AWS CLI를 사용하기 위해 AWS CLI를 설치합니다.
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # S3 버킷에 소스코드를 업로드합니다.
+      - name: Upload source code to S3
+        run: |
+          aws s3 cp . s3://manito42-code-deploy-bucket-test/server --recursive --exclude ".git/*" 
+
+      # CodeBuild를 사용해 S3 버킷에 업로드된 소스코드를 빌드합니다.(CodeBuild는 buildspec.yml을 참고합니다.)
+      - name: Trigger CodeBuild
+        id: trigger-codebuild
+        run: |
+          buildId=$(aws codebuild start-build \
+          --project-name YourCodeBuildProjectName \
+          --output text \
+          --source-version ${{ github.sha }})
+            echo "buildId=$buildId" >> $GITHUB_OUTPUT
+
+      # CodeBuild가 빌드를 완료할 때까지 기다립니다.
+      - name: Wait for CodeBuild completion
+        run: |
+          echo ${{ steps.trigger-codebuild.outputs.buildId }}
+          aws codebuild wait build-complete \
+          --build-id ${{ steps.trigger-codebuild.outputs.buildId }}
+
+      - name: Create CodeDeploy Deployment
+        id: create-deployment
+        run: |
+          id=$(aws deploy create-deployment \
+          --application-name 42manito-development-cd \
+          --deployment-config-name CodeDeployDefault.OneAtATime \
+          --output text --deployment-group-name 42manito-development-deployment-group \
+          --file-exists-behavior OVERWRITE \
+          --s3-location bucket=manito42-code-deploy-bucket-test,bundleType=zip,key=server.zip)
+          echo "deploymentId=$id" >> $GITHUB_OUTPUT
+
+      - name: Wait for deployment to finish
+        run: |
+          echo ${{ steps.create-deployment.outputs.deploymentId }}
+          aws deploy wait deployment-successful \ 
+          --deployment-id ${{ steps.create-deployment.outputs.deploymentId }}
