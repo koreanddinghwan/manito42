@@ -36,6 +36,8 @@ model User {
   mentorFeedbacksTo   MentorFeedback[] @relation("MentorFeedbackTo")
   mentorFeedbacksFrom MenteeFeedback[] @relation("MenteeFeedbackFrom")
 
+  userSearches        SearchHistory[]     @relation("SearchedUser")
+
   @@map("users")
 }
 
@@ -137,6 +139,17 @@ model Category {
   reservations   Reservation[]
 
   @@map("categories")
+}
+
+//history model
+model SearchHistory {
+  id         String   @id @default(uuid())
+  user       User     @relation("SearchedUser", fields: [userId], references: [id])
+  userId     Int      @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  searchJson Json     @map("search_json") @db.Json
+
+  @@map("search_histories")
 }
 
 // below are implicitlu created by prisma
