@@ -36,7 +36,7 @@ model User {
   mentorFeedbacksTo   MentorFeedback[] @relation("MentorFeedbackTo")
   mentorFeedbacksFrom MenteeFeedback[] @relation("MenteeFeedbackFrom")
 
-  userSearches        SearchHistory[]     @relation("SearchedUser")
+  searchHistories     SearchHistory[]     @relation("SearchedUser")
 
   @@map("users")
 }
